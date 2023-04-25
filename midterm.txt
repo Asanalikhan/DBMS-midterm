@@ -1,0 +1,100 @@
+1)group_by_Procedure
+
+Create or Replace Procedure group_by_Procedure (
+    tbl in varchar2,
+    col in varchar2,
+    counter out number
+)
+As
+   sql_query varchar2(2000);
+Begin
+   sql_query := 'Select Count(*) From (Select Count(*) From ' || tbl || ' Group by ' || col ||')';
+   Execute Immediate sql_query into counter;
+   dbms_output.put_line('The number of ' || col || 's in table ' || tbl || ' is equal to: ' || counter);
+End;
+
+
+Declare
+    counter number;
+    tbl varchar2(100);
+    col varchar2(100);
+Begin
+   tbl:='bank';
+   col:='name';
+   group_by_Procedure(tbl, col, counter);
+End;
+
+2)count_records_Function
+Create or Replace Function count_records_Function (tbl in varchar2) 
+   return number is 
+   counter number;
+   sql_query varchar2(2000);
+Begin
+   sql_query := 'Select Count(*) From ' || tbl;
+   Execute Immediate sql_query into counter;
+   return counter;
+End;
+
+
+Declare
+    counter number;
+    tbl varchar2(100);
+Begin
+   tbl:='bank';
+   counter:= count_records_Function(tbl);
+   dbms_output.put_line('The number of records in table ' || tbl || ' is equal to: ' || counter);
+End;
+
+3)delete_multiple_rows_ROWCOUNT
+Create or Replace Procedure delete_multiple_rows_ROWCOUNT(
+   cond in varchar2,
+   tbl in varchar2
+)  is
+   counter number;
+   sql_query varchar2(2000);
+Begin
+   sql_query := 'Delete From ' || tbl || ' WHERE ' || cond ;
+   Execute Immediate sql_query;
+   counter := SQL%ROWCOUNT; 
+   dbms_output.put_line('Rows affected: ' || counter);
+End;
+
+
+Begin
+   delete_multiple_rows_ROWCOUNT('rating = 85', 'review');
+End;
+
+4)Create or Replace Procedure new_Car(Car_ID1 in Number , Color_1 in VARCHAR2 , Price_1 in Number , Category_id1 in Number)
+	AS 
+	Sql_query VARCHAR2(2000); 
+	ex_invalid Exception; 
+Begin 
+	IF Length(Color_1) < 5 Then 
+		Raise ex_invalid; 
+	ELSE 
+      Sql_query := 'Insert into Car(Car_id, Color, Price, Category_id) 
+	   values('||Car_ID1|| ', ''' || Color_1 || ''', ' || Price_1 || ', ' || Category_id1 ||')';
+		Execute Immediate Sql_query; 
+	END IF; 
+		Exception WHEN ex_invalid THEN 
+		dbms_output.put_line('The number of characters of value Color is not enough');  
+END; 
+
+
+begin
+   new_Car(20, 'blue', 500000, 6);
+end; 
+
+5)Create or Replace Trigger count_rows_Trigger
+Before Insert On Review
+For Each Row
+Declare
+   counter number;
+Begin
+   Select Count(*) into counter From Review;
+   dbms_output.put_line('The number of rows before inserting new value is equal to: '||counter);
+End;
+
+Begin
+   Insert into Review(Car_id, Customer_id, Rating) Values (12, 8, 65);
+End;
